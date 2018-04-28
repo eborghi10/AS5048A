@@ -1,21 +1,20 @@
 #include <AS5048A.h>
 
-
-AS5048A angleSensor(10);
+AS5048A angleSensor(SS, true);
 
 void setup()
 {
 	Serial.begin(19200);
-	angleSensor.init();
+	angleSensor.begin();
 }
 
 void loop()
 {
 	delay(1000);
 
-	word val = angleSensor.getRawRotation();
-	Serial.print("Got rotation of: 0x");
-	Serial.println(val, HEX);
+	float val = angleSensor.getRotationInDegrees();
+	Serial.print("\nGot rotation of: ");
+	Serial.println(val);
 	Serial.print("State: ");
 	angleSensor.printState();
 	Serial.print("Errors: ");
