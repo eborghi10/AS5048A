@@ -44,14 +44,14 @@ private:
 	/**
 	 * Get the rotation of the sensor relative to the zero position.
 	 *
-	 * @return {int32_t} between -2^13 and 2^13
+	 * @return {int16_t} between -2^13 and 2^13
 	 */
-	int32_t getRotation();
+	int16_t getRotation();
 
 	/**
 	 * Returns the raw angle directly from the sensor
 	 */
-	int32_t getRawRotation();
+	int16_t getRawRotation();
 
 	/*
 	 * Check if an error has been encountered.
@@ -74,16 +74,16 @@ public:
 	/**
 	 * Get the rotation of the sensor relative to the zero position in degrees.
 	 *
-	 * @return {float} between 0 and 360
+	 * @return {double} between 0 and 360
 	 */
-	float getRotationInDegrees();
+	double getRotationInDegrees();
 
 	/**
 	 * Get the rotation of the sensor relative to the zero position in radians.
 	 *
-	 * @return {float} between 0 and 2 * PI
+	 * @return {double} between 0 and 2 * PI
 	 */
-	float getRotationInRadians();
+	double getRotationInRadians();
 
 	/**
 	 * returns the value of the state register

@@ -10,7 +10,7 @@ static const uint16_t AS5048A_DIAG_AGC                      = 0x3FFD;
 static const uint16_t AS5048A_MAGNITUDE                     = 0x3FFE;
 static const uint16_t AS5048A_ANGLE                         = 0x3FFF;
 
-static const float 	  AS5048A_MAX_VALUE 					= 8191.0;
+static const double 	  AS5048A_MAX_VALUE 					= 8191.0;
 
 /**
  * Constructor
@@ -38,6 +38,8 @@ void AS5048A::begin(){
 
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	SPI.begin();
+
+	setZeroPosition(getRawRotation());
 }
 
 /**
@@ -70,14 +72,14 @@ uint8_t AS5048A::spiCalcEvenParity(uint16_t value){
 /**
  * Get the rotation of the sensor relative to the zero position.
  *
- * @return {int32_t} between -2^13 and 2^13
+ * @return {int16_t} between -2^13 and 2^13
  */
-int32_t AS5048A::getRotation(){
+int16_t AS5048A::getRotation(){
 	uint16_t data;
-	int32_t rotation;
+	int16_t rotation;
 
 	data = AS5048A::getRawRotation();
-	rotation = static_cast<int32_t>(data) - static_cast<int32_t>(this->position);
+	rotation = static_cast<int16_t>(data) - static_cast<int16_t>(this->position);
 	if(rotation > AS5048A_MAX_VALUE) rotation = -((0x3FFF)-rotation); //more than -180
 
 	return rotation;
@@ -86,31 +88,31 @@ int32_t AS5048A::getRotation(){
 /**
  * Returns the raw angle directly from the sensor
  */
-int32_t AS5048A::getRawRotation(){
+int16_t AS5048A::getRawRotation(){
 	return AS5048A::read(AS5048A_ANGLE);
 }
 
 /**
   * Get the rotation of the sensor relative to the zero position in degrees.
   *
-  * @return {float} between 0 and 360
+  * @return {double} between 0 and 360
   */
 
-float AS5048A::getRotationInDegrees(){
-	int32_t rotation = getRotation();
-	float degrees = 360.0 * (rotation + AS5048A_MAX_VALUE) / (AS5048A_MAX_VALUE * 2.0);
+double AS5048A::getRotationInDegrees(){
+	int16_t rotation = getRotation();
+	double degrees = 360.0 * (rotation + AS5048A_MAX_VALUE) / (AS5048A_MAX_VALUE * 2.0);
 	return degrees;
 }
 
 /**
   * Get the rotation of the sensor relative to the zero position in radians.
   *
-  * @return {float} between 0 and 2 * PI
+  * @return {double} between 0 and 2 * PI
   */
 
-float AS5048A::getRotationInRadians(){
-	int32_t rotation = getRotation();
-	float radians = PI * (rotation + AS5048A_MAX_VALUE) / AS5048A_MAX_VALUE;
+double AS5048A::getRotationInRadians(){
+	int16_t rotation = getRotation();
+	double radians = PI * (rotation + AS5048A_MAX_VALUE) / AS5048A_MAX_VALUE;
 	return radians;
 }
 
