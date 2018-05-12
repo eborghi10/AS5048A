@@ -48,11 +48,6 @@ private:
 	 */
 	int16_t getRotation();
 
-	/**
-	 * Returns the raw angle directly from the sensor
-	 */
-	int16_t getRawRotation();
-
 	/*
 	 * Check if an error has been encountered.
 	 */
@@ -70,6 +65,11 @@ public:
 	 * Sets up the SPI interface
 	 */
 	void begin();
+
+	/**
+	 * Returns the raw angle directly from the sensor
+	 */
+	int16_t getRawRotation();
 
 	/**
 	 * Get the rotation of the sensor relative to the zero position in degrees.
