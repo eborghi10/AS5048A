@@ -38,8 +38,6 @@ void AS5048A::begin(){
 
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	SPI.begin();
-
-	setZeroPosition(getRawRotation());
 }
 
 /**
