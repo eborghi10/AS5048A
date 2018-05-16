@@ -31,8 +31,8 @@ void AS5048A::begin(){
 	setDelay();
 
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
-	this->settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
-	
+	this->settings = SPISettings(3000000, MSBFIRST, SPI_MODE1);
+
 	//setup pins
 	pinMode(this->_cs, OUTPUT);
 
@@ -264,7 +264,7 @@ uint16_t AS5048A::write(uint16_t registerAddress, uint16_t data) {
 	digitalWrite(this->_cs, LOW);
 	SPI.transfer16(command);
 	digitalWrite(this->_cs,HIGH);
-	
+
 	uint16_t dataToSend = 0b0000000000000000;
 	dataToSend |= data;
 
@@ -283,7 +283,7 @@ uint16_t AS5048A::write(uint16_t registerAddress, uint16_t data) {
 	digitalWrite(this->_cs,HIGH);
 
 	delay(this->esp32_delay);
-	
+
 	digitalWrite(this->_cs, LOW);
 	uint16_t response = SPI.transfer16(0x00);
 	digitalWrite(this->_cs, HIGH);
