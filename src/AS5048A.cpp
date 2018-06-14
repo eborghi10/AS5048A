@@ -42,7 +42,7 @@ void AS5048A::begin(){
 	setDelay();
 
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
-	this->settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
+	this->settings = SPISettings(3000000, MSBFIRST, SPI_MODE1);
 
 	//setup pins
 	pinMode(this->_cs, OUTPUT);
