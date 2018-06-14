@@ -10,6 +10,16 @@ static const uint16_t AS5048A_DIAG_AGC                      = 0x3FFD;
 static const uint16_t AS5048A_MAGNITUDE                     = 0x3FFE;
 static const uint16_t AS5048A_ANGLE                         = 0x3FFF;
 
+static const uint8_t AS5048A_AGC_FLAG												= 0xFF;
+static const uint8_t AS5048A_ERROR_PARITY_FLAG							= 0x04;
+static const uint8_t AS5048A_ERROR_COMMAND_INVALID_FLAG			= 0x02;
+static const uint8_t AS5048A_ERROR_FRAMING_FLAG							= 0x01;
+
+static const uint16_t AS5048A_DIAG_COMP_HIGH								= 0x2000;
+static const uint16_t AS5048A_DIAG_COMP_LOW									= 0x1000;
+static const uint16_t AS5048A_DIAG_COF											= 0x0800;
+static const uint16_t AS5048A_DIAG_OCF											= 0x0400;
+
 static const double 	  AS5048A_MAX_VALUE 					= 8191.0;
 
 /**
@@ -18,6 +28,7 @@ static const double 	  AS5048A_MAX_VALUE 					= 8191.0;
 AS5048A::AS5048A(byte cs, bool debug /*=false*/)
 : _cs(cs)
 , errorFlag(false)
+, ocfFlag(false)
 , position(0)
 , debug(debug)
 {
@@ -32,14 +43,12 @@ void AS5048A::begin(){
 
 	// 1MHz clock (AMS should be able to accept up to 10MHz)
 	this->settings = SPISettings(1000000, MSBFIRST, SPI_MODE1);
-	
+
 	//setup pins
 	pinMode(this->_cs, OUTPUT);
 
 	//SPI has an internal SPI-device counter, it is possible to call "begin()" from different devices
 	SPI.begin();
-
-	setZeroPosition(getRawRotation());
 }
 
 /**
@@ -144,14 +153,49 @@ void AS5048A::printState(){
  */
 uint8_t AS5048A::getGain(){
 	uint16_t data = AS5048A::getState();
-	return static_cast<uint8_t>(data & 0xFF);
+	return static_cast<uint8_t>(data & AS5048A_AGC_FLAG);
+}
+
+/**
+ * Get diagnostic
+ */
+String AS5048A::getDiagnostic(){
+	uint16_t data = AS5048A::getState();
+	if (data & AS5048A_DIAG_COMP_HIGH)
+	{
+		return "COMP high";
+	}
+	if (data & AS5048A_DIAG_COMP_LOW)
+	{
+		return "COMP low";
+	}
+	if (data & AS5048A_DIAG_COF)
+	{
+		return "CORDIC overflow";
+	}
+	if (data & AS5048A_DIAG_OCF && ocfFlag == false)
+	{
+		ocfFlag = true;
+		return "Offset compensation finished";
+	}
+	return "";
 }
 
 /*
  * Get and clear the error register by reading it
  */
-uint16_t AS5048A::getErrors(){
-	return AS5048A::read(AS5048A_CLEAR_ERROR_FLAG);
+String AS5048A::getErrors(){
+	uint16_t error = AS5048A::read(AS5048A_CLEAR_ERROR_FLAG);
+	if (error & AS5048A_ERROR_PARITY_FLAG){
+		return "Parity Error";
+	}
+	if (error & AS5048A_ERROR_COMMAND_INVALID_FLAG){
+		return "Command invalid";
+	}
+	if (error & AS5048A_ERROR_FRAMING_FLAG){
+		return "Framing error";
+	}
+	return "";
 }
 
 /*
@@ -181,7 +225,7 @@ bool AS5048A::error(){
  * Returns the value of the register
  */
 uint16_t AS5048A::read(uint16_t registerAddress){
-	uint16_t command = 0b0100000000000000; // PAR=0 R/W=R
+	uint16_t command = 0x4000; // PAR=0 R/W=R
 	command = command | registerAddress;
 
 	//Add a parity bit on the the MSB
@@ -216,7 +260,7 @@ uint16_t AS5048A::read(uint16_t registerAddress){
 	if (this->debug)
 	{
 		Serial.print("Read returned: ");
-		Serial.print(command, BIN);
+		Serial.println(command, BIN);
 	}
 
 	//Check if the error bit is set
@@ -245,7 +289,7 @@ uint16_t AS5048A::read(uint16_t registerAddress){
  */
 uint16_t AS5048A::write(uint16_t registerAddress, uint16_t data) {
 
-	uint16_t command = 0b0000000000000000; // PAR=0 R/W=W
+	uint16_t command = 0x0000; // PAR=0 R/W=W
 	command |= registerAddress;
 
 	//Add a parity bit on the the MSB
@@ -266,8 +310,8 @@ uint16_t AS5048A::write(uint16_t registerAddress, uint16_t data) {
 	digitalWrite(this->_cs, LOW);
 	SPI.transfer16(command);
 	digitalWrite(this->_cs,HIGH);
-	
-	uint16_t dataToSend = 0b0000000000000000;
+
+	uint16_t dataToSend = 0x0000;
 	dataToSend |= data;
 
 	//Craft another packet including the data and parity
@@ -285,9 +329,9 @@ uint16_t AS5048A::write(uint16_t registerAddress, uint16_t data) {
 	digitalWrite(this->_cs,HIGH);
 
 	delay(this->esp32_delay);
-	
+
 	digitalWrite(this->_cs, LOW);
-	uint16_t response = SPI.transfer16(0x00);
+	uint16_t response = SPI.transfer16(0x0000);
 	digitalWrite(this->_cs, HIGH);
 
 	//SPI - end transaction

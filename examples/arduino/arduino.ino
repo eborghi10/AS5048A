@@ -15,8 +15,10 @@ void loop()
 	float val = angleSensor.getRotationInDegrees();
 	Serial.print("\nGot rotation of: ");
 	Serial.println(val);
-	Serial.print("State: ");
+	Serial.println("State: ");
 	angleSensor.printState();
-	Serial.print("Errors: ");
+	Serial.println("Errors: ");
 	Serial.println(angleSensor.getErrors());
+	Serial.println("Diagnostics: ");
+	Serial.println(angleSensor.getDiagnostic());
 }

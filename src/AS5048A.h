@@ -7,12 +7,13 @@ class AS5048A{
 private:
 	bool debug;
 	bool errorFlag;
+	bool ocfFlag; // Avoid printing OCF flag everytime
 	uint8_t _cs;
 	uint16_t position;
 	uint8_t esp32_delay;
-	
+
 	SPISettings settings;
-	
+
 	uint8_t spiCalcEvenParity(uint16_t);
 
 	/**
@@ -105,7 +106,12 @@ public:
 	/*
 	 * Get and clear the error register by reading it
 	 */
-	uint16_t getErrors();
+	String getErrors();
+
+	/**
+	 * Get diagnostic
+	 */
+	String getDiagnostic();
 
 	/*
 	 * Set the zero position
