@@ -275,7 +275,7 @@ uint16_t AS5048A::read(uint16_t registerAddress)
 	if (this->debug)
 	{
 		Serial.print("Read returned: ");
-		Serial.println(command, BIN);
+		Serial.println(response, BIN);
 	}
 
 	//Check if the error bit is set
